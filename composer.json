@@ -1,0 +1,38 @@
+{
+    "name": "polymorph/plugin-test-kit",
+    "description": "Polymorph Extension SDK V2 test kit: in-memory fakes + PluginTestCase for extension unit tests.",
+    "type": "library",
+    "license": "MIT",
+    "version": "2.0.0",
+    "require": {
+        "php": "^8.2",
+        "polymorph/sdk": "^2.0",
+        "polymorph/sdk-laravel": "^2.0",
+        "illuminate/container": "^11.0 || ^12.0",
+        "illuminate/support": "^11.0 || ^12.0",
+        "phpunit/phpunit": "^11.0",
+        "pestphp/pest": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Polymorph\\Sdk\\Testing\\": "src/"
+        }
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../sdk-v2",
+            "options": { "symlink": true }
+        },
+        {
+            "type": "path",
+            "url": "../sdk-laravel",
+            "options": { "symlink": true }
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true
+    }
+}
