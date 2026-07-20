@@ -80,6 +80,6 @@ final class FakeAccessGrants implements AccessGrants
 
     private function key(int $userId, string $action, string $resource): string
     {
-        return $userId . '|' . $action . '|' . $resource;
+        return $userId.'|'.$action.'|'.$resource;
     }
 }

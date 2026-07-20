@@ -9,7 +9,7 @@ use Polymorph\Sdk\Testing\Data\InMemoryRepository;
 uses()->group('sdk-testing');
 
 it('creates, finds and updates with revision bumps', function (): void {
-    $repo = new InMemoryRepository();
+    $repo = new InMemoryRepository;
 
     $e = $repo->create(['name' => 'a', 'n' => 1]);
     expect($e->id)->toBe(1)
@@ -26,7 +26,7 @@ it('creates, finds and updates with revision bumps', function (): void {
 });
 
 it('replace overwrites all data; delete removes', function (): void {
-    $repo = new InMemoryRepository();
+    $repo = new InMemoryRepository;
     $repo->create(['a' => 1, 'b' => 2]);
 
     $replaced = $repo->replace(1, ['a' => 9]);
@@ -38,14 +38,14 @@ it('replace overwrites all data; delete removes', function (): void {
 });
 
 it('increment adds atomically', function (): void {
-    $repo = new InMemoryRepository();
+    $repo = new InMemoryRepository;
     $repo->create(['xp' => 10]);
     expect($repo->increment(1, 'xp', 5)->int('xp'))->toBe(15);
     expect($repo->increment(1, 'xp', -3)->int('xp'))->toBe(12);
 });
 
 it('firstOrCreate is idempotent on match', function (): void {
-    $repo = new InMemoryRepository();
+    $repo = new InMemoryRepository;
     $a = $repo->firstOrCreate(['key' => 'k1'], ['v' => 1]);
     $b = $repo->firstOrCreate(['key' => 'k1'], ['v' => 2]);
 
@@ -55,7 +55,7 @@ it('firstOrCreate is idempotent on match', function (): void {
 });
 
 it('upsert creates then merges values', function (): void {
-    $repo = new InMemoryRepository();
+    $repo = new InMemoryRepository;
     $repo->upsert(['key' => 'k1'], ['v' => 1]);
     $second = $repo->upsert(['key' => 'k1'], ['v' => 2, 'w' => 3]);
 
@@ -65,7 +65,7 @@ it('upsert creates then merges values', function (): void {
 });
 
 it('queries with where/in/null/order/limit', function (): void {
-    $repo = new InMemoryRepository();
+    $repo = new InMemoryRepository;
     $repo->create(['g' => 'x', 'n' => 3]);
     $repo->create(['g' => 'x', 'n' => 1]);
     $repo->create(['g' => 'y', 'n' => 2]);
@@ -85,7 +85,7 @@ it('queries with where/in/null/order/limit', function (): void {
 });
 
 it('aggregates sum/avg and paginates', function (): void {
-    $repo = new InMemoryRepository();
+    $repo = new InMemoryRepository;
     foreach ([10, 20, 30] as $v) {
         $repo->create(['v' => $v]);
     }
@@ -100,7 +100,7 @@ it('aggregates sum/avg and paginates', function (): void {
 });
 
 it('whereAuthor filters by stamped author', function (): void {
-    $repo = new InMemoryRepository();
+    $repo = new InMemoryRepository;
     $repo->currentAuthorId = 7;
     $repo->create(['x' => 1]);
     $repo->currentAuthorId = 9;

@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace Polymorph\Sdk\Testing\Support;
 
+use Polymorph\Sdk\Testing\PluginTestCase;
+
 /**
  * Минимальный config-репозиторий для лёгкого контейнера test-kit — фолбэк на случай,
  * когда illuminate/config недоступен в vendor плагина (плагин тянет только
  * polymorph/plugin-test-kit без полного laravel/framework). Поддерживает ровно тот
  * контракт, что использует ServiceProvider::mergeConfigFrom() и хелпер config():
  * get/set/has с dot-notation. Когда illuminate/config есть (плагин с laravel в
- * require-dev), {@see \Polymorph\Sdk\Testing\PluginTestCase} биндит настоящий
+ * require-dev), {@see PluginTestCase} биндит настоящий
  * Illuminate\Config\Repository ради полной точности.
  */
 final class InMemoryConfig

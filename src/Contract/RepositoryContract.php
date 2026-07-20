@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Polymorph\Sdk\Testing\Contract;
 
 use PHPUnit\Framework\Assert;
+use Polymorph\Sdk\Data\Entity;
 use Polymorph\Sdk\Data\Repository;
+use Polymorph\Sdk\Testing\Data\InMemoryRepository;
 
 /**
  * ЕДИНЫЙ контракт поведения {@see Repository}, прогоняемый и против фейка
- * ({@see \Polymorph\Sdk\Testing\Data\InMemoryRepository}), и против реального
+ * ({@see InMemoryRepository}), и против реального
  * flexible-адаптера ядра на БД. Это закрывает разрыв «фейк ≡ реальность»: раньше
  * оба тестировались ПАРАЛЛЕЛЬНЫМИ наборами кейсов, которые молча расходились
  * (так проскочил баг tie-break в ордеринге).
@@ -25,7 +27,7 @@ use Polymorph\Sdk\Data\Repository;
 final class RepositoryContract
 {
     /**
-     * @param callable(): Repository<\Polymorph\Sdk\Data\Entity> $freshRepo
+     * @param  callable(): Repository<Entity>  $freshRepo
      */
     public static function assertAll(callable $freshRepo): void
     {
@@ -40,7 +42,7 @@ final class RepositoryContract
      * системному id, а его направление совпадает с направлением последнего order
      * (asc → id asc, desc → id desc). Зеркалит EloquentRecordRepository ядра.
      *
-     * @param callable(): Repository<\Polymorph\Sdk\Data\Entity> $freshRepo
+     * @param  callable(): Repository<Entity>  $freshRepo
      */
     private static function assertTieBreakMirrorsCore(callable $freshRepo): void
     {
@@ -59,7 +61,7 @@ final class RepositoryContract
     }
 
     /**
-     * @param callable(): Repository<\Polymorph\Sdk\Data\Entity> $freshRepo
+     * @param  callable(): Repository<Entity>  $freshRepo
      */
     private static function assertFilterCountLimit(callable $freshRepo): void
     {
@@ -77,7 +79,7 @@ final class RepositoryContract
     }
 
     /**
-     * @param callable(): Repository<\Polymorph\Sdk\Data\Entity> $freshRepo
+     * @param  callable(): Repository<Entity>  $freshRepo
      */
     private static function assertFirstOrCreateUpsert(callable $freshRepo): void
     {
@@ -99,7 +101,7 @@ final class RepositoryContract
     }
 
     /**
-     * @param callable(): Repository<\Polymorph\Sdk\Data\Entity> $freshRepo
+     * @param  callable(): Repository<Entity>  $freshRepo
      */
     private static function assertPaginate(callable $freshRepo): void
     {

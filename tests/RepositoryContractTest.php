@@ -12,5 +12,5 @@ uses()->group('sdk-testing');
 it('honours the shared Repository contract (in-memory fake)', function (): void {
     // Та же проверка прогоняется против реального flexible-адаптера в
     // tests/Feature/DataPlatform/RepositoryContractTest.php — фейк ≡ реальность.
-    RepositoryContract::assertAll(static fn (): InMemoryRepository => new InMemoryRepository());
+    RepositoryContract::assertAll(static fn (): InMemoryRepository => new InMemoryRepository);
 });

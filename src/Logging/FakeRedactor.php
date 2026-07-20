@@ -20,6 +20,7 @@ final class FakeRedactor implements Redactor
         foreach ($payload as $key => $value) {
             if (is_array($value)) {
                 $out[$key] = $this->redact($value);
+
                 continue;
             }
             $out[$key] = is_string($key) && $this->isSensitive($key) ? self::REDACTED : $value;

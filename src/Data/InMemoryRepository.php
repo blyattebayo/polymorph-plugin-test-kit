@@ -18,9 +18,10 @@ use Polymorph\Sdk\Http\Pagination;
  * firstOrCreate/upsert и fluent-Query (where/orderBy/limit/paginate/aggregate).
  *
  * @template T of Entity
+ *
  * @implements Repository<T>
  */
-final class InMemoryRepository implements Repository, QueryExecutor
+final class InMemoryRepository implements QueryExecutor, Repository
 {
     /** @var array<int, array{data: array<string, mixed>, revision: int, authorId: ?int}> */
     private array $rows = [];
@@ -177,7 +178,7 @@ final class InMemoryRepository implements Repository, QueryExecutor
     }
 
     /**
-     * @param array<string, mixed> $match
+     * @param  array<string, mixed>  $match
      */
     private function findByMatch(array $match): ?Entity
     {
@@ -191,7 +192,7 @@ final class InMemoryRepository implements Repository, QueryExecutor
     }
 
     /**
-     * @param array<string, mixed> $match
+     * @param  array<string, mixed>  $match
      */
     private function rowMatchesEquality(int $id, array $match): bool
     {
@@ -227,7 +228,7 @@ final class InMemoryRepository implements Repository, QueryExecutor
     }
 
     /**
-     * @param array{data: array<string, mixed>, revision: int, authorId: ?int} $row
+     * @param  array{data: array<string, mixed>, revision: int, authorId: ?int}  $row
      */
     private function matchesConditions(int $id, array $row, Query $query): bool
     {
@@ -245,7 +246,7 @@ final class InMemoryRepository implements Repository, QueryExecutor
      * Значение поля для фильтра/сортировки. Системные поля 'id'/'author_id'
      * берутся из метаданных строки, прочие — из data.
      *
-     * @param array{data: array<string, mixed>, revision: int, authorId: ?int} $row
+     * @param  array{data: array<string, mixed>, revision: int, authorId: ?int}  $row
      */
     private function fieldValue(int $id, array $row, string $field): mixed
     {
@@ -257,7 +258,7 @@ final class InMemoryRepository implements Repository, QueryExecutor
     }
 
     /**
-     * @param array{data: array<string, mixed>, revision: int, authorId: ?int} $row
+     * @param  array{data: array<string, mixed>, revision: int, authorId: ?int}  $row
      */
     private function matchesAuthor(array $row, Query $query): bool
     {
@@ -283,8 +284,8 @@ final class InMemoryRepository implements Repository, QueryExecutor
     }
 
     /**
-     * @param list<int> $ids
-     * @param list<array{field: string, dir: string}> $orders
+     * @param  list<int>  $ids
+     * @param  list<array{field: string, dir: string}>  $orders
      * @return list<int>
      */
     private function applyOrders(array $ids, array $orders): array

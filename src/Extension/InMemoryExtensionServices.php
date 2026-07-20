@@ -36,9 +36,9 @@ final class InMemoryExtensionServices implements ExtensionServices
 
     public function repository(ExtensionContext $context, string $entity, string $entityClass = Entity::class): Repository
     {
-        $key = $context->id->value . ':' . $entity;
+        $key = $context->id->value.':'.$entity;
         if (! isset($this->repositories[$key])) {
-            $repo = new InMemoryRepository();
+            $repo = new InMemoryRepository;
             $repo->currentAuthorId = $this->currentAuthorId;
             $this->repositories[$key] = $repo;
         }
@@ -53,12 +53,12 @@ final class InMemoryExtensionServices implements ExtensionServices
 
     public function definitions(ExtensionContext $context): DefinitionRegistry
     {
-        return $this->definitions[$context->id->value] ??= new FakeDefinitionRegistry();
+        return $this->definitions[$context->id->value] ??= new FakeDefinitionRegistry;
     }
 
     public function grants(ExtensionContext $context): AccessGrants
     {
-        return $this->grants[$context->id->value] ??= new FakeAccessGrants();
+        return $this->grants[$context->id->value] ??= new FakeAccessGrants;
     }
 
     /** Стампит authorId на будущие create() во всех (и новых) репозиториях. */

@@ -7,6 +7,7 @@ namespace Polymorph\Sdk\Testing;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\TestCase;
 use Polymorph\Sdk\Data\DefinitionRegistry;
+use Polymorph\Sdk\Data\Entity;
 use Polymorph\Sdk\Data\ExtensionData;
 use Polymorph\Sdk\Data\Repository;
 use Polymorph\Sdk\Extension\ExtensionContext;
@@ -14,6 +15,7 @@ use Polymorph\Sdk\Extension\ExtensionServices;
 use Polymorph\Sdk\Logging\Redactor;
 use Polymorph\Sdk\Testing\Extension\InMemoryExtensionServices;
 use Polymorph\Sdk\Testing\Logging\FakeRedactor;
+use Polymorph\Sdk\Testing\Support\InMemoryConfig;
 use Polymorph\Sdk\Testing\Validation\FakeValidationConstraints;
 use Polymorph\Sdk\Validation\ValidationConstraints;
 
@@ -45,13 +47,13 @@ abstract class PluginTestCase extends TestCase
     {
         parent::setUp();
 
-        $this->app = new Container();
+        $this->app = new Container;
         Container::setInstance($this->app);
 
-        $this->services = new InMemoryExtensionServices();
+        $this->services = new InMemoryExtensionServices;
         $this->app->instance(ExtensionServices::class, $this->services);
-        $this->app->singleton(ValidationConstraints::class, static fn (): ValidationConstraints => new FakeValidationConstraints());
-        $this->app->singleton(Redactor::class, static fn (): Redactor => new FakeRedactor());
+        $this->app->singleton(ValidationConstraints::class, static fn (): ValidationConstraints => new FakeValidationConstraints);
+        $this->app->singleton(Redactor::class, static fn (): Redactor => new FakeRedactor);
 
         // config-репозиторий (ленивый): ExtensionProvider::register() мерджит
         // собственный be/config/{id}.php через mergeConfigFrom(), который резолвит
@@ -60,8 +62,8 @@ abstract class PluginTestCase extends TestCase
         // настоящий Illuminate\Config\Repository, когда illuminate/config доступен
         // (полная точность), иначе компактный in-kit фолбэк.
         $this->app->singleton('config', static fn (): object => class_exists(\Illuminate\Config\Repository::class)
-            ? new \Illuminate\Config\Repository()
-            : new \Polymorph\Sdk\Testing\Support\InMemoryConfig());
+            ? new \Illuminate\Config\Repository
+            : new InMemoryConfig);
 
         $manifest = $this->loadManifest();
         $this->context = ExtensionContext::for($manifest['id']);
@@ -88,7 +90,7 @@ abstract class PluginTestCase extends TestCase
     /**
      * Скоупнутый репозиторий сущности (общий стор с data()).
      *
-     * @return Repository<\Polymorph\Sdk\Data\Entity>
+     * @return Repository<Entity>
      */
     protected function records(string $entity): Repository
     {
@@ -125,11 +127,11 @@ abstract class PluginTestCase extends TestCase
         $candidates = [];
         $cwd = getcwd();
         if (is_string($cwd) && $cwd !== '') {
-            $candidates[] = $cwd . DIRECTORY_SEPARATOR . 'extension.json';
-            $candidates[] = dirname($cwd) . DIRECTORY_SEPARATOR . 'extension.json';
+            $candidates[] = $cwd.DIRECTORY_SEPARATOR.'extension.json';
+            $candidates[] = dirname($cwd).DIRECTORY_SEPARATOR.'extension.json';
         }
         // Фолбэк: от расположения теста вверх до корня плагина.
-        $candidates[] = dirname(__DIR__, 4) . DIRECTORY_SEPARATOR . 'extension.json';
+        $candidates[] = dirname(__DIR__, 4).DIRECTORY_SEPARATOR.'extension.json';
 
         foreach ($candidates as $path) {
             if (is_file($path)) {

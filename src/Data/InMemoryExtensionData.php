@@ -19,8 +19,7 @@ final class InMemoryExtensionData implements ExtensionData
     public function __construct(
         private readonly InMemoryExtensionServices $services,
         private readonly ExtensionContext $context,
-    ) {
-    }
+    ) {}
 
     public function repository(string $entity, string $entityClass = Entity::class): Repository
     {
