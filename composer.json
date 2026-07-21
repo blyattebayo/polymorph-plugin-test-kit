@@ -3,7 +3,6 @@
     "description": "Polymorph Extension SDK V2 test kit: in-memory fakes + PluginTestCase for extension unit tests.",
     "type": "library",
     "license": "MIT",
-    "version": "2.0.0",
     "require": {
         "php": "^8.2",
         "blyattebayo/polymorph-sdk": "^2.0",
