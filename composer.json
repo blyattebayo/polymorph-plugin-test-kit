@@ -1,13 +1,13 @@
 {
-    "name": "polymorph/plugin-test-kit",
+    "name": "blyattebayo/polymorph-plugin-test-kit",
     "description": "Polymorph Extension SDK V2 test kit: in-memory fakes + PluginTestCase for extension unit tests.",
     "type": "library",
     "license": "MIT",
     "version": "2.0.0",
     "require": {
         "php": "^8.2",
-        "polymorph/sdk": "^2.0",
-        "polymorph/sdk-laravel": "^2.0",
+        "blyattebayo/polymorph-sdk": "^2.0",
+        "blyattebayo/polymorph-sdk-laravel": "^2.0",
         "illuminate/container": "^11.0 || ^12.0",
         "illuminate/support": "^11.0 || ^12.0",
         "phpunit/phpunit": "^11.0",
