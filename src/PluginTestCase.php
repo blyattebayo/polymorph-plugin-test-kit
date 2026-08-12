@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Polymorph\Sdk\Testing;
 
 use Illuminate\Container\Container;
+use Illuminate\Config\Repository as ConfigRepository;
+use Illuminate\Events\Dispatcher;
 use PHPUnit\Framework\TestCase;
 use Polymorph\Sdk\Data\DefinitionRegistry;
 use Polymorph\Sdk\Data\Entity;
@@ -15,18 +17,12 @@ use Polymorph\Sdk\Extension\ExtensionServices;
 use Polymorph\Sdk\Logging\Redactor;
 use Polymorph\Sdk\Testing\Extension\InMemoryExtensionServices;
 use Polymorph\Sdk\Testing\Logging\FakeRedactor;
-use Polymorph\Sdk\Testing\Support\InMemoryConfig;
 use Polymorph\Sdk\Testing\Validation\FakeValidationConstraints;
 use Polymorph\Sdk\Validation\ValidationConstraints;
 
 /**
- * Базовый TestCase расширения (V2) — замена V1 PluginTestKit\PluginTestCase.
- *
- * Поднимает лёгкий контейнер (без полного Laravel/БД), биндит SDK-контракты на
- * in-memory фейки, читает extension.json плагина, регистрирует его провайдер и
- * прогоняет onEnable (сидинг определений/контента в in-memory стор). После этого
- * сервисы расширения резолвятся через `$this->app->make(...)` ровно как в проде,
- * но поверх фейкового data-слоя.
+ * Boots the manifest provider against the same SDK contracts as production,
+ * backed by deterministic in-memory data services.
  *
  *     uses(\Polymorph\Sdk\Testing\PluginTestCase::class);
  *
@@ -49,21 +45,14 @@ abstract class PluginTestCase extends TestCase
 
         $this->app = new Container;
         Container::setInstance($this->app);
+        $this->app->instance('events', new Dispatcher($this->app));
 
         $this->services = new InMemoryExtensionServices;
         $this->app->instance(ExtensionServices::class, $this->services);
         $this->app->singleton(ValidationConstraints::class, static fn (): ValidationConstraints => new FakeValidationConstraints);
         $this->app->singleton(Redactor::class, static fn (): Redactor => new FakeRedactor);
 
-        // config-репозиторий (ленивый): ExtensionProvider::register() мерджит
-        // собственный be/config/{id}.php через mergeConfigFrom(), который резолвит
-        // 'config'. В лёгком контейнере его нет — без этого регистрация провайдера
-        // расширения с конфиг-файлом падала бы BindingResolutionException. Берём
-        // настоящий Illuminate\Config\Repository, когда illuminate/config доступен
-        // (полная точность), иначе компактный in-kit фолбэк.
-        $this->app->singleton('config', static fn (): object => class_exists(\Illuminate\Config\Repository::class)
-            ? new \Illuminate\Config\Repository
-            : new InMemoryConfig);
+        $this->app->instance('config', new ConfigRepository);
 
         $manifest = $this->loadManifest();
         $this->context = ExtensionContext::for($manifest['id']);
@@ -72,11 +61,7 @@ abstract class PluginTestCase extends TestCase
         if (is_string($providerClass) && class_exists($providerClass)) {
             $provider = new $providerClass($this->app);
             $provider->register();
-            // boot() пропускаем намеренно: listeners/schedule/ExtensionState —
-            // рантайм хоста, в unit-тестах не нужны. onEnable прогоняем явно.
-            if (method_exists($provider, 'fireEnabled')) {
-                $provider->fireEnabled();
-            }
+            $provider->boot();
         }
     }
 

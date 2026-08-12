@@ -5,10 +5,12 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "blyattebayo/polymorph-sdk": "^5.0",
-        "blyattebayo/polymorph-sdk-laravel": "^5.0",
+        "blyattebayo/polymorph-sdk": "6.0.0",
+        "blyattebayo/polymorph-sdk-laravel": "6.0.0",
         "illuminate/container": "^11.0 || ^12.0",
+        "illuminate/config": "^11.0 || ^12.0",
         "illuminate/support": "^11.0 || ^12.0",
+        "illuminate/events": "^11.0 || ^12.0",
         "phpunit/phpunit": "^11.0",
         "pestphp/pest": "^3.0"
     },
