@@ -24,7 +24,7 @@ final class FakeDefinitionRegistry implements DefinitionRegistry
     {
         if (! isset($this->defs[$entity])) {
             $id = ++$this->seq;
-            $this->defs[$entity] = new DefinitionRef($id, $id, $entity);
+            $this->defs[$entity] = new DefinitionRef($id, 'fake-schema-'.$id, $entity);
         }
 
         return $this->defs[$entity];

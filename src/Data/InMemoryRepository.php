@@ -290,11 +290,11 @@ final class InMemoryRepository implements QueryExecutor, Repository
      */
     private function applyOrders(array $ids, array $orders): array
     {
-        // Зеркалит детерминированный tie-break ядра (EloquentRecordRepository):
+        // Зеркалит детерминированный tie-break V2 QueryPlanner:
         // ничьи разрешаются по системному id, а его направление совпадает с
         // направлением ПОСЛЕДНЕГО заданного порядка (при ASC — id ASC, чтобы не
-        // переворачивать хронологию; при DESC или без порядка — id DESC).
-        $tieDir = 'desc';
+        // переворачивать хронологию; при DESC — id DESC; без порядка — id ASC).
+        $tieDir = 'asc';
         foreach ($orders as $order) {
             $tieDir = $order['dir'] === 'asc' ? 'asc' : 'desc';
         }
