@@ -50,7 +50,7 @@ final class InMemoryRepository implements QueryExecutor, Repository
     public function update(int $id, array $partial): Entity
     {
         $this->assertExists($id);
-        $this->rows[$id]['data'] = array_replace($this->rows[$id]['data'], $partial);
+        $this->rows[$id]['data'] = $this->mergePatch($this->rows[$id]['data'], $partial);
         $this->rows[$id]['revision']++;
 
         return $this->entity($id);
@@ -281,6 +281,31 @@ final class InMemoryRepository implements QueryExecutor, Repository
             'notnull' => $actual !== null,
             default => false,
         };
+    }
+
+    /**
+     * Maps merge recursively while lists are replaced as indivisible values,
+     * matching the host repository's JSON merge-patch write semantics.
+     *
+     * @param  array<string,mixed>  $stored
+     * @param  array<string,mixed>  $patch
+     * @return array<string,mixed>
+     */
+    private function mergePatch(array $stored, array $patch): array
+    {
+        foreach ($patch as $key => $value) {
+            $current = $stored[$key] ?? null;
+            $stored[$key] = $this->isMap($value) && $this->isMap($current)
+                ? $this->mergePatch($current, $value)
+                : $value;
+        }
+
+        return $stored;
+    }
+
+    private function isMap(mixed $value): bool
+    {
+        return is_array($value) && ! array_is_list($value);
     }
 
     /**

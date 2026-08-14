@@ -22,7 +22,7 @@ use Polymorph\Sdk\Testing\Data\InMemoryRepository;
  * не моделирует намеренно (см. InMemoryRepository).
  *
  * Вызывающий передаёт фабрику ПУСТОГО репозитория сущности с полями
- * track(string), status(string), xp(int).
+ * track(string), status(string), xp(int), profile(json), tags(string many).
  */
 final class RepositoryContract
 {
@@ -33,6 +33,9 @@ final class RepositoryContract
     {
         self::assertTieBreakMirrorsCore($freshRepo);
         self::assertFilterCountLimit($freshRepo);
+        self::assertCrudMutationParity($freshRepo);
+        self::assertNullAndInequalityParity($freshRepo);
+        self::assertAggregateParity($freshRepo);
         self::assertFirstOrCreateUpsert($freshRepo);
         self::assertPaginate($freshRepo);
     }
@@ -103,6 +106,87 @@ final class RepositoryContract
     /**
      * @param  callable(): Repository<Entity>  $freshRepo
      */
+    private static function assertCrudMutationParity(callable $freshRepo): void
+    {
+        $repo = $freshRepo();
+        $created = $repo->create([
+            'track' => 'walk',
+            'status' => 'active',
+            'xp' => 10,
+            'profile' => [
+                'name' => 'Ada',
+                'prefs' => ['theme' => 'dark', 'locale' => 'ru'],
+                'history' => ['one', 'two'],
+            ],
+            'tags' => ['alpha', 'beta'],
+        ]);
+
+        Assert::assertEquals($created->data, $repo->find($created->id)?->data, 'find returns created data');
+        Assert::assertCount(1, $repo->all(), 'all returns active rows');
+
+        $updated = $repo->update($created->id, [
+            'profile' => ['prefs' => ['theme' => 'light'], 'history' => ['fresh']],
+            'tags' => ['gamma'],
+        ]);
+        Assert::assertEquals([
+            'name' => 'Ada',
+            'prefs' => ['theme' => 'light', 'locale' => 'ru'],
+            'history' => ['fresh'],
+        ], $updated->array('profile'), 'update deeply merges maps and replaces nested lists');
+        Assert::assertSame(['gamma'], $updated->array('tags'), 'update replaces a many-valued list wholesale');
+
+        $incremented = $repo->increment($created->id, 'xp', 5);
+        Assert::assertSame(15, $incremented->int('xp'), 'increment updates the numeric field');
+
+        $replaced = $repo->replace($created->id, ['track' => 'replacement', 'xp' => 1]);
+        Assert::assertEquals(['track' => 'replacement', 'xp' => 1], $replaced->data, 'replace removes omitted values');
+
+        $repo->delete($created->id);
+        Assert::assertNull($repo->find($created->id), 'delete makes find return null');
+        Assert::assertSame([], $repo->all(), 'delete removes the row from all');
+    }
+
+    /**
+     * @param  callable(): Repository<Entity>  $freshRepo
+     */
+    private static function assertNullAndInequalityParity(callable $freshRepo): void
+    {
+        $repo = $freshRepo();
+        $done = $repo->create(['track' => 'one', 'status' => 'done', 'xp' => 1]);
+        $pending = $repo->create(['track' => 'two', 'status' => 'pending', 'xp' => 2]);
+        $missing = $repo->create(['track' => 'three', 'xp' => 3]);
+
+        Assert::assertSame(
+            [$pending->id, $missing->id],
+            array_map(static fn (Entity $entity): int => $entity->id, $repo->query()->where('status', '!=', 'done')->get()),
+            '!= includes a missing/null field as well as unequal values',
+        );
+        Assert::assertSame([$missing->id], array_map(
+            static fn (Entity $entity): int => $entity->id,
+            $repo->query()->whereNull('status')->get(),
+        ), 'whereNull selects missing values');
+        Assert::assertSame([$done->id, $pending->id], array_map(
+            static fn (Entity $entity): int => $entity->id,
+            $repo->query()->whereNotNull('status')->get(),
+        ), 'whereNotNull rejects missing values');
+    }
+
+    /**
+     * @param  callable(): Repository<Entity>  $freshRepo
+     */
+    private static function assertAggregateParity(callable $freshRepo): void
+    {
+        $repo = $freshRepo();
+        $repo->create(['track' => 'one', 'xp' => 2]);
+        $repo->create(['track' => 'two', 'xp' => 4]);
+
+        Assert::assertSame(6.0, $repo->query()->sum('xp'), 'sum aggregates numeric values');
+        Assert::assertSame(3.0, $repo->query()->avg('xp'), 'avg aggregates numeric values');
+    }
+
+    /**
+     * @param  callable(): Repository<Entity>  $freshRepo
+     */
     private static function assertPaginate(callable $freshRepo): void
     {
         $repo = $freshRepo();
@@ -115,5 +199,18 @@ final class RepositoryContract
         Assert::assertSame(3, $page1->pagination->total, 'pagination total');
         Assert::assertTrue($page1->pagination->hasMorePages(), 'page 1 hasMore');
         Assert::assertFalse($repo->query()->paginate(2, 2)->pagination->hasMorePages(), 'page 2 no more');
+        self::assertInvalidPagination(fn () => $repo->query()->paginate(0, 2));
+        self::assertInvalidPagination(fn () => $repo->query()->paginate(1, 0));
+        self::assertInvalidPagination(fn () => $repo->query()->paginate(1, 501));
+    }
+
+    private static function assertInvalidPagination(callable $operation): void
+    {
+        try {
+            $operation();
+            Assert::fail('Invalid pagination must be rejected.');
+        } catch (\InvalidArgumentException) {
+            Assert::assertTrue(true);
+        }
     }
 }
